@@ -21,12 +21,7 @@ public class Skill {
  
     @NotBlank
     @Column(nullable = false)
-    private String category;  // e.g. "Frontend", "Backend", "DevOps", "Tools"
- 
-    @Min(0) @Max(100)
-    @Column(nullable = false)
-    private int proficiencyLevel;  // 0–100
- 
+    private String category;   
     private String iconUrl;
     private int displayOrder = 0;
 }
