@@ -3,13 +3,17 @@ package com.portfolio.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
- 
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
  
 @Entity
 @Table(name = "contacts")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Contact {
  
     @Id

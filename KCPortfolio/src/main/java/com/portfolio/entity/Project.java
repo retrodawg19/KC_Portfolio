@@ -2,14 +2,18 @@ package com.portfolio.entity;
  
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
- 
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.util.List;
  
 @Entity
 @Table(name = "projects")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Project {
  
     @Id
