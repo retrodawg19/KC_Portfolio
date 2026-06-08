@@ -1,62 +1,59 @@
 package com.portfolio.serviceimpl;
 
 import com.portfolio.dto.ContactRequestDTO;
+import com.portfolio.dto.ContactResponseDTO;
 import com.portfolio.entity.Contact;
+import com.portfolio.mapper.ContactMapper;
 import com.portfolio.repository.ContactRepository;
 import com.portfolio.service.ContactService;
 import com.portfolio.service.EmailService;
-
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @AllArgsConstructor
-public class ContactServiceImpl implements ContactService{
+public class ContactServiceImpl implements ContactService {
 
-    private  ContactRepository contactRepository;
-    private  EmailService emailService;
+    private final ContactRepository contactRepository;
+    private final EmailService emailService;
+    private final ContactMapper contactMapper;
 
-    public Contact submitContact(ContactRequestDTO dto) {
-        // 1. Save to database
-        Contact contact = new Contact();
-        contact.setName(dto.getName());
-        contact.setEmail(dto.getEmail());
-        contact.setSubject(dto.getSubject());
-        contact.setMessage(dto.getMessage());
+    @Override
+    public void submitContact(ContactRequestDTO dto) {
+        Contact contact = contactMapper.toEntity(dto);  // maps name, email, subject, message
         Contact saved = contactRepository.save(contact);
-
-        // 2. Notify you (the owner)
         emailService.sendOwnerNotification(saved);
-
-        // 3. Auto-reply to the sender — "Thank you for reaching out"
         emailService.sendAutoReply(saved);
-
         log.info("Contact form submitted by: {}", saved.getEmail());
-        return saved;
     }
 
-    // Admin: view all messages
-    public List<Contact> getAllContacts() {
-        return contactRepository.findAllByOrderBySubmittedAtDesc();
+    @Override
+    public List<ContactResponseDTO> getAllContacts() {
+        return contactRepository.findAllByOrderBySubmittedAtDesc()
+                .stream()
+                .map(contactMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    // Admin: mark a message as read/replied/archived
-    public Contact updateStatus(Long id, Contact.ContactStatus status) {
+    @Override
+    public ContactResponseDTO updateStatus(Long id, Contact.ContactStatus status) {
         Contact contact = contactRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contact not found with id: " + id));
         contact.setStatus(status);
-        return contactRepository.save(contact);
+        return contactMapper.toResponseDTO(contactRepository.save(contact));
     }
 
+    @Override
     public void deleteContact(Long id) {
         if (!contactRepository.existsById(id)) {
             throw new RuntimeException("Contact not found with id: " + id);
         }
         contactRepository.deleteById(id);
+        log.info("Contact deleted with id: {}", id);
     }
 }
